@@ -1,0 +1,25 @@
+#blueprint file for turqueti amundsen
+#input setting
+popid: tur_amundsen
+nseq: 10
+L: 2058671
+whether_folded: false
+SFS: 	68574 19335 8658 4986 1887 480 517 575 923 
+#smallest_size_of_SFS_bin_used_for_estimation: 2 
+#largest_size_of_SFS_bin_used_for_estimation: 20 
+pct_training: 0.67 # percentage of sites for training
+nrand: 2	4	6	8 
+project_dir: ./turqueti/tarcap/analyses/stairwayplot/amundsen 
+stairway_plot_dir: ./turqueti/tarcap/analyses/stairwayplot/stairway_plot_es 
+ninput: 200 
+#random_seed: 6
+#output setting
+mu: 2.20e-09 
+year_per_generation: 12 
+#plot setting
+plot_title: turqueti_amundsen
+xrange: 0,0
+yrange: 0,0
+xspacing: 2
+yspacing: 2
+fontsize: 11

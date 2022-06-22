@@ -1,0 +1,25 @@
+#blueprint file for turqueti EA
+#input setting
+popid: tur_EA
+nseq: 12
+L: 2058671
+whether_folded: false 
+SFS: 	57946 21168 10626 6011 3325 1158 307 378 469 491 680
+#smallest_size_of_SFS_bin_used_for_estimation: 2
+#largest_size_of_SFS_bin_used_for_estimation: 20 
+pct_training: 0.67 
+nrand: 2	5	8	19
+project_dir: ./turqueti/tarcap/analyses/stairwayplot/EA
+stairway_plot_dir: ./turqueti/tarcap/analyses/stairwayplot/stairway_plot_es
+ninput: 200
+#random_seed: 6
+#output setting
+mu: 2.20e-09
+year_per_generation: 12
+#plot setting
+plot_title: turqueti_EA
+xrange: 0,0
+yrange: 0,0
+xspacing: 2
+yspacing: 2
+fontsize: 11

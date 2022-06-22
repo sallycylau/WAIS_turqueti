@@ -1,0 +1,5 @@
+"W" "X" "Y" "Z" "D" "stderr" "Zscore" "BABA" "ABBA" "nsnps"
+"1" "Amundsen" "EA" "Weddell" "outgroup" -0.0176 0.003103 -5.676 1430 1482 120518
+"2" "Amundsen" "Shetland" "Weddell" "outgroup" -0.0222 0.002838 -7.83 1365 1427 120518
+"3" "Ross" "EA" "Weddell" "outgroup" -0.0711 0.003048 -23.334 1371 1581 120518
+"4" "Ross" "Shetland" "Weddell" "outgroup" -0.0778 0.002853 -27.284 1307 1528 120518
