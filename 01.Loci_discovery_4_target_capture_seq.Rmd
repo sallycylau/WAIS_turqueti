@@ -1,0 +1,167 @@
+---
+title: "Loci discovery for target capture sequencing of ddRAD loci"
+output: github_document
+---
+
+Based on ddRADseq data of Antarctic octopus species (mixed species, n=440)  
+Raw reads were demultiplxed and cleaed by BGI  
+Ran fastQC to check quality 
+<br>
+Align ddRAD reads against draft P. turqueti genome with bowtie2 --very-sensitive-local
+```{bash, error=TRUE, results='hide'}
+for sample in `ls ./turqueti/cleaned/*_1.fq.gz`
+do
+genome="./turqueti/ddRAD/genome/PT186"
+in_dir="./turqueti/ddRAD/cleaned"
+out_dir="./turqueti/ddRAD/aligned"
+log_file=$out_dir/bowtie.oe
+base=$(basename $sample "_1.fq.gz")
+
+bowtie2 --very-sensitive-local -x $genome -1 ${in_dir}/${base}_1.fq.gz -2 ${in_dir}/${base}_2.fq.gz -S ${out_dir}/${base}.sam &> $log_file
+done
+```
+Convert .sam to .bam
+```{bash, error=TRUE, results='hide'}
+for sample in `ls ./turqueti/aligned/*.sam`
+do
+in_dir="./turqueti/ddRAD/aligned"
+out_dir="./turqueti/ddRAD/aligned_bam"
+log_file=$out_dir/samtools_convert.oe
+base=$(basename $sample ".sam")
+
+samtools view -S -b ${in_dir}/${base}.sam > ${out_dir}/${base}.bam &> $log_file
+done
+```
+Sort .bam files
+```{bash, error=TRUE, results='hide'}
+for sample in `ls ./turqueti/aligned_bam/*.bam`
+do
+in_dir="./turqueti/ddRAD/aligned_bam"
+out_dir="./turquetiddRAD/aligned_bam_sort"
+log_file=$out_dir/samtools_convert.oe
+base=$(basename $sample ".bam")
+
+samtools sort ${in_dir}/${base}.bam ${out_dir}/${base}.bam
+done
+```
+Run stacks/ref_map.pl to build ddRAD loci from the bowtie2 aligned PE data
+```{bash, error=TRUE, results='hide'}
+in_path=./turqueti/ddRAD/aligned_bam_sort
+out_dir=./turqueti/ddRAD/ref_map
+popmap=./turqueti/ddRAD/info/popmap_SOocto.tsv  #technical replicates are labelled as PL1 and PL2, with PL=plate
+log_file=$out_dir/ref_map.oe
+
+ref_map.pl --samples $in_path --popmap $popmap -o $out_dir -X "populations:--vcf"
+```
+Identify samples with high missing data (>80% missing data in raw, pre-filtered vcf file)
+```{bash, error=TRUE, results='hide'}
+vcftools --vcf ./turqueti/ddRAD/ref_map/populations.snps.vcf --missing-indv #274 samples <80% in high missing data 
+```
+Check if technical replicates are same as each other using DAPC
+```{bash, error=TRUE, results='hide'}
+#keep duplicate samples only in vcf
+vcftools --vcf ./turqueti/ddRAD/ref_map/populations.snps.vcf --keep ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_keep.txt --out ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_only.vcf --recode --recode-INFO-all
+
+#Do some simple filtering to keep high quality SNPs
+vcftools --vcf ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_only.vcf.recode.vcf --min-meanDP 15 --out ./turqueti/ddRAD/ref_map/duplicates_check/SNPfiltering/1_depth/out.vcf --recode --recode-INFO-all
+
+vcftools --vcf ./turqueti/ddRAD/ref_map/duplicates_check/1_depth/out.vcf.recode.vcf --max-missing 0.8 --out ./turqueti/ddRAD/ref_map/duplicates_check/SNPfiltering/2_maxmissing/max_missing08.vcf --recode --recode-INFO-all
+
+#convert max_missing08.vcf.recode.vcf into .structure format using PGDSpider
+```
+Check if technical replicates are same as each other using DAPC
+```{bash, error=TRUE, results='hide'}
+#keep duplicate samples only in vcf
+vcftools --vcf ./turqueti/ddRAD/ref_map/populations.snps.vcf --keep ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_keep.txt --out ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_only.vcf --recode --recode-INFO-all
+
+#Do some simple filtering to keep high quality SNPs
+vcftools --vcf ./turqueti/ddRAD/ref_map/duplicates_check/duplicates_only.vcf.recode.vcf --min-meanDP 15 --out ./turqueti/ddRAD/ref_map/duplicates_check/SNPfiltering/1_depth/out.vcf --recode --recode-INFO-all
+
+vcftools --vcf ./turqueti/ddRAD/ref_map/duplicates_check/1_depth/out.vcf.recode.vcf --max-missing 0.8 --out ./turqueti/ddRAD/ref_map/duplicates_check/SNPfiltering/2_maxmissing/max_missing08.vcf --recode --recode-INFO-all
+```
+Run DAPC
+```{r, eval=F, echo=T}
+library(adegenet)
+library(vcfR)
+library(dartR)
+
+#new import by vcf file
+setwd("./turqueti/ddRAD/analyses/duplicate_check")
+
+vcf <- read.vcfR("./max_missing08.vcf.recode.vcf")
+tur_genlight <- vcfR2genlight(vcf)
+tur_genlight@pop
+
+popmap_duplicates <- read.table('./popmap_tur_duplicates.txt', header=TRUE) #Here we separate duplicate samples by sample ID
+
+strata(tur_genlight) <- popmap_duplicates
+setPop(tur_genlight) <- ~pop
+
+#genlight to genind 
+tur_genind <- gl2gi(tur_genlight, v = 1)
+strata(tur_genind) <-data.frame(popmap_duplicates$pop)
+
+grp <- find.clusters(tur_genind, max.n.clust=30) #retain 10 PCs, 3 clusters 
+names(grp)
+table(pop(tur_genind), grp$grp)
+
+dapc1 <- dapc(tur_genind, grp$grp) #retain 10 PCs, 2 discriminant functions 
+scatter(dapc1)
+assignplot(dapc1, subset=1:44) #all duplicates are identified as the same as each other
+```
+SNP filtering for target capture bait design  
+<br>
+Here we want to have a relaxed filtering scheme to keep variation for target, but only include those 276 samples that have less missing data than 80%  
+For technical duplicates, keep the one that has leave amount of missing data  
+Keep SNPs present in at least 50% of these 276 samples, and min maf of 0.01  
+```{bash, error=TRUE, results='hide'}
+refmap='./turqueti/ddRAD/ref_map/'
+out_dir='./turqueti/ddRAD/population_target_cap_filter'
+popmap='./turqueti/ddRAD/population_target_cap_filter/popmap_target_cap.tsv' # sample names of the 276 samples we are keeping
+
+populations -P $refmap -O $out_dir -M $popmap -R 0.5 --min-maf 0.01 --vcf --fasta-loci --fasta-samples -t 10
+```
+Determine 'reliable' ddRAD loci for target capture sequencing of ddRAD loci  
+After SNP filtering in stacks (-R 0.5, --minmaf 0.01), align the consensus sequences of the filtered loci back to genome using bowtie2 (end to end alignemnt)  
+```{bash, error=TRUE, results='hide'}
+#convert loci.fa to .fq  
+seqtk seq -F '#' populations.loci.fa > populations.loci.fq
+
+#align consensus to genome
+genome='./turqueti/ddRAD/genome/PT186'
+consensus='./turqueti/ddRAD/population_target_cap_filter/populations.loci.fq'
+out_dir='./turqueti/ddRAD/population_target_cap_filter/'
+
+bowtie2 --sensitive -x $genome -U $consensus -S ${out_dir}/consensus_loci.sam 
+
+#31142 reads; of these:
+#  31142 (100.00%) were unpaired; of these:
+#    2077 (6.67%) aligned 0 times
+#    8942 (28.71%) aligned exactly 1 time
+#    20123 (64.62%) aligned >1 times
+#93.33% overall alignment rate
+```
+Exclude loci aligned 0 times and those mapped to multiple locations (>1 time)  
+Then use samtools to extract uniquely mapped reads  
+```{bash, error=TRUE, results='hide'}
+#convert .sam to .bam 
+samtools view -S -b consensus_loci.sam > consensus_loci.bam 
+
+#Count unique reads 
+samtools view -F 4 consensus_loci.bam | grep -v "XS:" | wc -l #8942
+
+#Extract unique reads
+samtools view -H consensus_loci.bam > header.sam
+samtools view -F 4 consensus_loci.bam | grep -v "XS:" | cat header.sam - | \
+samtools view -b - > unique.bam
+
+#get fasta from unique.bam
+module load seqtk
+module load samtools
+
+samtools bam2fq unique.bam | seqtk seq -A > unique_consensus_loci.fa
+
+#loci & associated consensus sequences in unique_consensus_loci.fa can be provided for target capture bait design
+#here we have 8942 loci discovered for target capture sequencing of ddRAD loci
+#unique_consensus_loci.fa is in ./results/ddRAD of this repository 
+```
