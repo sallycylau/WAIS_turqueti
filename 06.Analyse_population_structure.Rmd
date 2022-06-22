@@ -1,0 +1,253 @@
+---
+title: "Analyse population structure"
+output: github_document
+---
+
+## Population structure inference (STRUCTURE)
+
+run STRUCUTRE via structure_threader: 
+```{bash, error=TRUE, results='hide'}
+cd ./turqueti/tarcap/analyses/structure
+
+./bin/structure_threader run -K 10 -R 10 -i ./tur_stru.txt -o ./structure/results -t 20 -st ./bin/structure
+```
+
+then export the STRUCTURE outputs to CLUMPAK (http://clumpak.tau.ac.il/) to generate consensus across replicates within each K  
+<br>
+plotting STRUCTURE outputs  
+<br>
+plot results using pophelper (https://github.com/royfrancis/pophelper)
+```{r, eval=F, echo=T}
+library(pophelper)
+library(tcltk2)
+library(gridExtra)
+library(ggplot2)
+library(label.switching)
+library(tidyr)
+library(gtable)
+
+#best K identified (Evanno method; k=2 , highest log likelihood; k=7)
+
+#set path to the folder with CLUMPAK outputs
+setwd("./turqueti/tarcap/analyses/structure/best_k/")
+
+sfiles <- list.files(pattern ="./*.txt")
+
+#include individual names from STRUCTURE file as row names
+slist <- readQ(files=sfiles, indlabfromfile=T)
+
+#check whether everything is loaded properly
+readQ(files=sfiles,filetype="structure")
+
+#check class of ouput
+class(slist)
+head(slist[[1]])
+
+#qlist attributes
+attributes(slist)
+
+#dataframe attributes
+attributes(slist[[1]])
+
+#tabulate Q
+tr1 <- tabulateQ(qlist=slist)
+tabulateQ(slist)
+
+#summariseQ
+sr1 <- summariseQ(tr1)
+summariseQ(tr1, writetable=TRUE)
+
+#plot K=2 and K=7 results together
+slist <- readQ(sfiles)
+
+slist1 <- alignK(slist[c(1,2)])
+p2 <- plotQ(slist1,imgoutput="join",returnplot=T,exportplot=F,basesize=11)
+p2
+
+##plot K=7 with specific colours 
+
+#read pop file
+tur_poplabels <- read.table("./popmap_tur97.txt", header=T,stringsAsFactors=F)
+
+#specify colors
+clist <- list("shiny"=c("#E8A000","#1B639B","#E82E5E","#F4ACBF","#51B3EB","#369F72","#A0B1BA"))
+
+#plot K=7 only
+p4 <-plotQ(slist[c(2)],returnplot=T,exportplot=T,height=1.5, divsize=0.2, exportpath=getwd(), imgtype="pdf", dpi=900,showindlab=T,
+           clustercol=clist$shiny,splab=paste0("K=",sapply(slist[c(1)],ncol)),
+           grplab = tur_poplabels_location, selgrp="location", ordergrp=T, 
+           subsetgrp=c("ShagRocks","SouthGeorgia","SouthOrkney","ElephantIs","SouthShetland","BransfieldStrait","SouthWeddellSea", "EastWeddellSea","WestAntPeninsula","Amundsen","RossSea","EAAdelie","EACasey","EAPrydz"),
+           grplabangle = 90, grplabpos=1, grplabsize=0.8, grplabheight=0.1, indlabheight=0.1, indlabsize=1, showlegend=T, showdiv = FALSE, sortind="all")
+```
+
+## PCA between sample locations 
+```{r, eval=F, echo=T}
+library(adegenet)
+library(vcfR)
+library(dartR)
+setwd("./turqueti/tarcap/analyses/pca")
+
+##PCA with all P. turqueti samples
+
+#vcf to genlight
+vcf <- read.vcfR("./thin1000.vcf.recode.vcf")
+tur_genlight <- vcfR2genlight(vcf)
+tur_genlight@pop
+
+#export ind.names on genlight as species
+ID_list <- as.data.frame(tur_genlight@ind.names)
+
+write.csv(ID_list, file="tur_ID_genlight.csv")
+
+#import popmap. Make sure the order the IDs in popmap is the same as the order in oph_genlight@ind.names 
+pops_location <- read.csv('tur_PCA_location96.csv', header=TRUE)
+
+strata(tur_genlight) <- pops_location
+setPop(tur_genlight) <- ~location
+
+tur_genlight@ind.names
+
+#PCA on genlight objects
+
+pca1 <- glPca(tur_genlight) #Number of axes selected: 10
+pca1
+
+print(pca1)
+head(pca1)
+
+#obtain variation per each component (PC1 and PC2 here)
+#https://groups.google.com/forum/#!topic/poppr/yUdJycNYrhc
+
+var_frac <- pca1$eig/sum(pca1$eig)
+signif(sum(var_frac[1:1]) * 100, 4) #PC1
+
+#[1] 9.142
+
+signif(sum(var_frac[2:2]) * 100, 4) #PC2
+
+#[1] 4.388
+
+#Plot PCA
+
+library(ggplot2)
+pca1_2 <- as.data.frame(pca1$scores)
+pca1_2$pop <- pop(tur_genlight)
+
+tur_tarcap_location<-read.csv("tur_PCA_location96.csv", header=T)
+
+tur_tarcap_location$location <- factor(tur_tarcap_location$location, levels = c("Shag Rocks",
+                                       "South Georgia",
+                                       "South Orkney Is",
+                                       "Elephant Is",
+                                       "Bransfield Strait",
+                                       "South Weddell Sea",
+                                       "East Weddell Sea",
+                                       "KingGeorge Is",
+                                       "Robert Is",
+                                       "Livingston Is",
+                                       "Deception Is",
+                                       "West Antarctic Peninsula",
+                                       "Amundsen Sea",
+                                       "Ross Sea",
+                                       "Adelie Land",
+                                       "East Casey Station",
+                                       "Prydz Bay"))
+ggplot(data=pca1_2, aes(x=pca1_2[,1],y=-pca1_2[,2],colour=as.factor(tur_tarcap_location$location), frame = T)) +
+  geom_point(shape=21, size = 2.5, colour="black", aes(fill=factor(tur_tarcap_location$location)))  +  scale_fill_manual(values = c('#e6194b', '#3cb44b', '#ffe119', '#4363d8', '#f58231', '#911eb4', '#46f0f0', '#f032e6', '#bcf60c', '#fabebe', '#008080', 'black', '#e6beff', '#9a6324', '#fffac8',  '#aaffc3', 'grey')) +
+  xlab("PC1 (9.14%)") + ylab("PC2 (4.39%)") + theme_bw() 
+```
+
+## TreeMix
+
+convert vcf file to treemix input 
+
+```{r, eval=F, echo=T}
+library(adegenet)
+library(vcfR)
+library(dartR)
+
+setwd("./turqueti/tarcap/analyses/treemix")
+
+#treemix for P. turqueti with two outgroups
+
+#vcf to genlight
+vcf <- read.vcfR("./thin1000.vcf.recode.vcf")
+tur_genlight <- vcfR2genlight(vcf)
+tur_genlight@pop
+
+#export ind.names on genlight as species
+ID_list <- as.data.frame(tur_genlight@ind.names)
+
+write.csv(ID_list, file="tur_treemix_genlight.csv")
+
+#Make sure the order of the tur_genlight@ind.names is the same as the order of the IDs in popmap
+pops_location <- read.csv('tur_popmap_treemix.csv', header=TRUE)
+
+#Plot samples by location (or outgroup)
+strata(tur_genlight) <- pops_location
+setPop(tur_genlight) <- ~location
+
+tur_genlight@ind.names
+tur_genlight@pop
+
+gl2treemix(
+  tur_genlight,
+  outfile = "tur.treemix_input.gz",
+  outpath = getwd()
+)
+```
+
+run TreeMix on hpc
+```{bash, error=TRUE, results='hide'}
+cd ./turqueti/tarcap/analyses/treemix
+
+#do 10 reps for each m (migration edge) for m = 0-10
+
+$FILE=tur
+
+for i in {1..10}
+do
+ treemix -i $FILE.treemix_input.gz -m 0 -o $FILE.$i.0 -bootstrap -k 1 -noss -se > treemix_${i}.0_log &
+done
+
+
+for j in {10..10}
+do
+	for M in {1..10}
+	do
+	treemix -i tur.treemix_input.gz -m ${M} -o tur.rep${j}.${M} -bootstrap -k 1 -noss -root P_cornuta,P_aequipapillae -se > treemix_rep${j}.${M}_log 
+	done
+done
+
+```
+plot TreeMix runs
+```{r, eval=F, echo=T}
+#plot Treemix runs
+library(RColorBrewer)
+library(R.utils)
+source("./turqueti/tarcap/analyses/treemix/plotting_funcs.R") # here you need to add the path
+
+setwd("./turqueti/tarcap/analyses/treemix")
+
+#post hoc analysis
+library(OptM)
+test.linear = optM('./turqueti/tarcap/analyses/treemix', method = "linear")
+plot_optM(test.linear, method = "linear")
+
+#plot 10 runs of treemix (m=5) side-by-side:
+#selected m=5 after evaluating all runs with OptM
+par(mfrow=c(2,3))
+for(rep in 1:10){
+  plot_resid(cex=0.8,paste0("tur.rep",rep,".5"), "pop.list.txt")
+  title(paste(rep,"reps"))
+}
+
+#get total explained variance 
+get_f("tur.rep7.5") #rep7 has the least amount of residuals
+
+#plot tree and residual plot
+plot_tree("tur.rep7.5")
+plot_resid("tur.rep7.5", 
+           "pop.list.txt")
+```
+
