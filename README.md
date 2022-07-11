@@ -21,4 +21,4 @@ This repository contains scripts for the analyses of ddRAD loci of Pareledone tu
 
 #### Raw data accessions
 
-> The ddRADseq data of Southern Ocean octopus generated for target capture bait design is deposited on National Centre for Biotechnology Information (NCBI) under the BioProject PRJNA853080, with Sequence Read Archive (SRA) accessions SRR19893055–SRR19893494. The target capture of ddRAD loci data in Pareledone turqueti is deposited under the BioProject PRJNA853871, with SRA accessions SRR19892485–SRR19892582. 
+> The ddRADseq data of Southern Ocean octopus generated for target capture bait design is deposited on National Centre for Biotechnology Information (NCBI) under the BioProject PRJNA853080, with Sequence Read Archive (SRA) accessions SRR19893055–SRR19893494. The target capture of ddRAD loci data of Pareledone turqueti is deposited under the BioProject PRJNA853871, with SRA accessions SRR19892485–SRR19892582. 

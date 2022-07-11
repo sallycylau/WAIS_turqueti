@@ -6,7 +6,6 @@ output: github_document
 ## Prepare ADMIXTOOLS input files to calculate D and outgroup-f3 statistics
 
 convert vcf file to eigenstrat format  
-using the vcf file generated from SNP filtering - for stairwayplot, make sure the outgroups are included
 ```{bash, error=TRUE, results='hide'}
 module load python
 module load R 
@@ -14,29 +13,29 @@ module load gdc
 
 cd ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat
 
-python ./vcf2eigenstrat.py -v ./admixtools.vcf -o tur_5pop_root
+python ./vcf2eigenstrat.py -v ./admixtools.vcf -o tur_SRSGseaway_root
 
-#which gives out tur_5pop_root.geno, tur_5pop_root.ind, tur_5pop_root.snp files 
+#which gives out tur_SRSGseaway_root.geno, tur_SRSGseaway_root.ind, tur_SRSGseaway_root.snp files 
 
 ##In the .snp file, my non-standard chromosome names are problematic for running ADMIXTOOLS
 ##I need to modify the first column (SNP ID) and the second column (CHR ID) of that file as follows:
 
-#First column (SNP ID): replace SNP ID by integers from 1_1 to 1_120857 (=my total number of SNPs). 1_ = chrom 1
+#First column (SNP ID): replace SNP ID by additive numbers from 1_1 to 1_120857 (=my total number of SNPs). 1_ = chrom 1
 #Second column (CHR ID): replace CHR names (or contig names) by integer of 1. Arbitrary name all my contigs as chrom 1 
-#third column (genetic distance): set this as 0 
-#fourth column(SNP ID): replace SNP ID by integers from 1 to 120857.
+#fourth column (SNP ID): replace SNP ID by additive numbers from 1 to 120857.
 
+###I later found a script that does the above automatically: https://github.com/joanam/scripts/blob/master/convertVCFtoEigenstrat.sh
 
-##In order to keep track of the SNP positions in the analyses though, which is necessary for the jackknife process of defining blocks, I need to make another file defining the blocks (= which SNP belongs to which CHR). This info will be important to allow calculation of Z_score (statistical significance)
+#In order to keep track of the SNP positions in the analyses, which is necessary for the jackknife process of defining blocks, I made my_contigs.txt defining the blocks (= which SNP belongs to which contig). This info allows the calculation of Zscore
 
-#The file can be called: "my_contigs.txt" and looks like:
-#1st column = list of SNP ID as integers from 1_1 to 1_120857
+#Anatomy of "my_contigs.txt":
+#1st column = list of SNP ID as additive numbers from 1_1 to 1_120857
 #2nd column = contig names corresponding to where the SNPs are actually located, but these names cannot be like the original complicated "CLocus-81 to CLocus-197238". Instead they need to be integers. In this case, it will be 1 to 5725.
 ```
 
 ## Run ADMIXTOOLS using admixR
 
-Run admixR to calculate D statistics and f3 statistics  
+Run admixR to calculate D statistics and outgroup f3 statistics  
 <br>
 Some useful tutorials:  
 https://bodkan.net/admixr/articles/tutorial.html#d-statistic-1  
@@ -62,26 +61,27 @@ R
 library(admixr)
 library(tidyverse)
 
-data_prefix <- "./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/manually_edited/tur_5popseaway_root"
+data_prefix <- "./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root"
 snps <- eigenstrat(data_prefix)
 snp_info <- count_snps(snps)
 
-##D statistics 
-Dresult <- d(W = c("Amundsen", "Ross"), X = c("EA", "Shetland"), Y = "Weddell", Z = "outgroup",
+##D statistics (in the form of BABA-ABBA)
+Dresult <- d(W = c("Amundsen", "Ross"), X = c("EA", "Shetland"), Y = "Weddell", Z = "SRSG",
   data = snps, params = list(blockname = "./admixtools/vcf2eigenstrat/my_contigs.txt"))
 
 write.table(Dresult, file="./results/admixtools/Dresults.txt")
 
+#in the form of BABA-ABBA:
 #significant positive D = excess of allele sharing between the first and the third population 
 #significant negative D = excess of allele sharing between the second and the third population
 
+
 ##outgroup-f3-statistics 
-#Estimate the branch length (shared genetic drift) between a pair of populations A and B with respect to a common outgroup C. 
-#In this case, the higher the f3 value, the longer the shared evolutionary time between A and B.
+#The higher the f3 value, the more shared derived allele frequency there is between pop A and pop B with respect to a common outgroup pop C.
 
 pops <- c("Amundsen", "Ross", "Weddell", "Shetland", "EA")
 
-f3result <- f3(A = pops, B = pops, C = "outgroup", data = snps, params = list(blockname = "./admixtools/vcf2eigenstrat/my_contigs.txt"))
+f3result <- f3(A = pops, B = pops, C = "SRSG", data = snps, params = list(blockname = "./admixtools/vcf2eigenstrat/my_contigs.txt"))
 
 write.table(f3result, file="./results/admixtools/f3results.txt")
 ```
