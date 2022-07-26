@@ -6,7 +6,7 @@ output: github_document
 ## Prepare input files for fastsimcoal
 Following the pipeline and scripts in http://cmpg.unibe.ch/software/fastsimcoal2/additionalScripts.html  
 <br>
-Because fastsimcaol requires sites must be present across all samples, here we ranomly subsampled a fixed number of genotypes for each pop to a dataset without missing data using sampleKgenotypesPerPop.py  
+Because fastsimcoal requires sites must be present across all samples, here we randomly subsampled a fixed number of genotypes for each pop to a dataset without missing data using sampleKgenotypesPerPop.py  
 <br>
 Explore a few samples size combinations (-k) to see what combination keeps the most snps, most sites & highest number of samples (same ideas as downprojection in dadi)
 ```{bash, error=TRUE, results='hide'}
@@ -35,38 +35,12 @@ python ./vcf2sfs.py -i ./seaway_tur_resampled_LDpruned.vcf -o WS_AS_RS_EA -p ./s
 
 ## Specify fastsimcoal models
 <br>
-Here are the models that were tested in the paper:  
-Abbreviations: WS, Weddell Sea; AS, Amundnsen Sea; RS, Ross Sea; EA, East Antarctica  
+The models that were tested in the paper are illistrated in the supplementary figures.  
 <br>
 See hpc/fastsimcol/models in this repo for corresponding .est and .tpl files  
 <br>
-Within hpc, models are called 1_WS_AS_RS_EA_[model name], or 2_WS_AS_RS_EA_[model name]; where 1_ or 2_ represent step one and step two, respectively  
+Within hpc, models are called 1_[model name], or 2_[model name]; where 1_ or 2_ represent step one and step two, respectively  
 <br>
-
-####  Step one model names: models with circumpolar gene flow driven only by the Antarctic circumpolar current (ACC; clockwise)  
-* _psc_conflow_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with continuous ACC migration  
-* _psc_no_col_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with no migration. ACC migration begin at T2. Population size change also at T1 and T2  
-* _psc_par_col1_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and AS. ACC migration begin at T2. Population size change also at T1 and T2  
-* _psc_par_col2_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between AS and RS. ACC migration begin at T2. Population size change also at T1 and T2  
-* _psc_ful_col1_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and RS. ACC migration begin at T2. Population size change also at T1 and T2  
-* _psc_ful_col2_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and AS, AS and RS and WS and RS. ACC migration begin at T2. Population size change also at T1 and T2  
-<br>
-
-#### Step two model names: models with circumpolar gene flow driven only both the  Antarctic circumpolar current (ACC; clockwise) and Antarctic Slope Current (ASC; counter-clockwise)
-* _psccc_conflow_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with continuous ACC and ASC migration  
-* _psccc_no_col_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with no migration. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_par_col1_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and AS. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_par_col2_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between AS and RS. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_ful_col1_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and RS. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_ful_col2_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and AS, AS and RS, and WS and RS. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_ful_col3_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between AS and RS, and WS and RS. ACC and ASC migration begin at T2. Population size change also at T1 and T2  
-* _psccc_ful_col4_: Population size change in ancestral population at T0. WS, AS, RS and EA split into four populations at T1 with asymmetric migration between WS and AS, and WS and RS. ACC and ASC migration begin at T2. Population size change also at T1 and T2 
-
-**Illustrations of models that were tested**  
-Please see figure legend of Extended Fig. 3 and 4 of the manuscript for details 
-<br>
-<br>
-![img](figures/model_steps.png)
 
 ## Run fastsimcoal models
 Run fastsimocal. Do 100 reps with 500,000 coalescent simulations per model
