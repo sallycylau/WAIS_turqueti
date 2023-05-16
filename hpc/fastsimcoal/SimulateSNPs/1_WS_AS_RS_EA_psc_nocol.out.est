@@ -1,0 +1,40 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NEA$       unif     78263    78263   output
+1  NWS$       unif     223600    223600   output
+1  NAS$       unif     20941    20941   output
+1  NRS$       unif     79349    79349   output
+1  NEAC$       unif     5.67E+05    5.67E+05   output
+1  NWSC$       unif     1.44E+06    1.44E+06   output
+1  NASC$       unif     3.59E+05    3.59E+05   output
+1  NRSC$       unif     8.60E+05    8.60E+05   output
+1  NANC2$        unif     1.60E+04    1.60E+04   output
+1  NANC1$        unif     8.56E+05    8.56E+05   output
+1  T1         unif     248847    248847   output bounded
+0  TPLUS$         unif     0.3108817868    0.3108817868   hide bounded
+1  TPLUSANC$         unif     85164    85164   hide
+0  NM30$       logunif  1.90E+01   1.90E+01     hide bounded
+0  NM01$       logunif  1.89E+01   1.89E+01     hide bounded
+0  NM12$       logunif  1.92E+01   1.92E+01     hide bounded
+0  NM23$       logunif  1.91E+01   1.91E+01     hide bounded
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+
+0  NWSRES$ = NWSC$/NWS$    hide
+0  NASRES$ = NASC$/NAS$    hide
+0  NRSRES$ = NRSC$/NRS$    hide
+0  NEARES$ = NEAC$/NEA$    hide
+0  RES1$ = NANC2$/NWSC$    hide
+0  RELANC$ = NANC1$/NANC2$    hide
+1  T0 = TPLUSANC$ + T1 output
+1  T2 = T1*TPLUS$    output
+0  MIG30$ = NM30$/NEA$  output
+0  MIG01$ = NM01$/NWS$  output
+0  MIG12$ = NM12$/NAS$  output
+0  MIG23$ = NM23$/NRS$  output

@@ -1,0 +1,52 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NEA$       unif     1456    1456   output
+1  NWS$       unif     20071    20071   output
+1  NAS$       unif     107251    107251   output
+1  NRS$       unif     12339    12339   output
+1  NEAC$       unif     5.70E+05    5.70E+05   output
+1  NWSC$       unif     6.63E+05    6.63E+05   output
+1  NASC$       unif     2.34E+04    2.34E+04   output
+1  NRSC$       unif     3.02E+05    3.02E+05   output
+1  NANC2$        unif     1.3E+6    1.3E+6   output
+1  NANC1$        unif     6.52E-03    6.52E-03   output
+1  T1         unif     5797    5797   output bounded
+0  TPLUS$         unif     0.3193030878    0.3193030878   hide bounded
+1  TPLUSANC$         unif     141738    141738   hide
+0  NM10$       logunif  6.25E-03   6.25E-03     hide bounded
+0  NM30$       logunif  1.82E+01   1.82E+01     hide bounded
+0  NM01$       logunif  1.89E+01   1.89E+01     hide bounded
+0  NM21$       logunif  1.90E+01   1.90E+01     hide bounded
+0  NM12$       logunif  6.08E+00   6.08E+00     hide bounded
+0  NM32$       logunif  1.28E+01   1.28E+01     hide bounded
+0  NM03$       logunif  3.09E+00   3.09E+00     hide bounded
+0  NM23$       logunif  9.67E+00   9.67E+00     hide bounded
+0  NM02C$       logunif  6.95E-03   6.95E-03     hide bounded
+0  NM20C$       logunif  3.42E-03   3.42E-03     hide bounded
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+
+0  NWSRES$ = NWSC$/NWS$    hide
+0  NASRES$ = NASC$/NAS$    hide
+0  NRSRES$ = NRSC$/NRS$    hide
+0  NEARES$ = NEAC$/NEA$    hide
+0  RES1$ = NANC2$/NWSC$    hide
+0  RELANC$ = NANC1$/NANC2$    hide
+1  T0 = TPLUSANC$ + T1 output
+1  T2 = T1*TPLUS$    output
+0  MIG10$ = NM10$/NAS$  output
+0  MIG30$ = NM30$/NEA$  output
+0  MIG01$ = NM01$/NWS$  output
+0  MIG21$ = NM21$/NRS$  output
+0  MIG12$ = NM12$/NAS$  output
+0  MIG32$ = NM32$/NEA$  output
+0  MIG03$ = NM03$/NWS$  output
+0  MIG23$ = NM23$/NRS$  output
+0  MIG02C$ = NM02C$/NWSC$  output
+0  MIG20C$ = NM20C$/NRSC$  output
