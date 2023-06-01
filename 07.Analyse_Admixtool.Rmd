@@ -87,3 +87,43 @@ write.table(f3result, file="./results/admixtools/f3results.txt")
 ```
 
 Then visualise results using ggplot2 in R
+
+
+## Analysis of simulated data from fastsimcoal models and compare against observed data
+
+
+Generate simulated SNPs for best complex model with WAIS collapse (_pscc_fulcol1_) and simpler models with no (_psc_nocol_) or partial (_psc_parcol_) WAIS collapse 
+<br>
+<br>
+See hpc/fastsimcol_4pops/SimulateSNPs in this repo for corresponding scripts  
+<br>
+Calculate f4-statistic and compared across observed and simulated data
+```{bash, error=TRUE, results='hide', eval=FALSE}
+#Example script using observed data 
+cd ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root
+
+nano sim_4pop.par
+
+genotypename: ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.geno
+snpname:      ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.snp
+indivname:    ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.ind
+blockname:    ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/my_contigs.txt
+poplistname:  pop_list.txt
+f4mode:   YES      
+printsd:  YES
+
+nano pop_list.txt
+
+Weddell
+Amundsen
+Ross
+EA
+
+
+qpDstat -p sim_4pop.par -V >logfile
+
+```
+<br>
+See hpc/admixtools/simulated in this repo for scripts ussed for analysis of simulated data with Admixtools (e.g. "modelname".geno)
+
+

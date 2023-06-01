@@ -109,7 +109,7 @@ Check if setting AA has worked:
 /sw/containers/bcftools-1.13.sif view -e 'INFO/AA=="."' max_het07_aa.vcf.gz -H | wc -l   
 ```
 
-Remove Shetland Islands samples (depends on analyses):
+Remove e.g. Shetland Islands samples (depends on analyses):
 ```{bash, error=TRUE, results='hide'}
 cd ./turqueti/tarcap/SNPfiltering2/11_rm_shetland
 

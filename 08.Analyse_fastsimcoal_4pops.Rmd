@@ -1,5 +1,5 @@
 ---
-title: "Demographic modelling with Fastsimcoal"
+title: "Demographic modelling with Fastsimcoal 4 populaitons"
 output: github_document
 ---
 
@@ -37,7 +37,7 @@ python ./vcf2sfs.py -i ./seaway_tur_resampled_LDpruned.vcf -o WS_AS_RS_EA -p ./s
 <br>
 The models that were tested in the paper are illistrated in the supplementary figures.  
 <br>
-See hpc/fastsimcol/models in this repo for corresponding .est and .tpl files  
+See hpc/fastsimcol_4pops/models in this repo for corresponding .est and .tpl files  
 <br>
 Within hpc, models are called 1_[model name], or 2_[model name]; where 1_ or 2_ represent step one and step two, respectively  
 <br>
@@ -86,7 +86,7 @@ Here we use the scripts designed by Bagley et al. (2016) to automate the process
 * slightly adjusted the original scripts as we have 4DSFS, and we didn't maximised likelihood distributions using a reduced SNP set  
 * the adjusted scripts are located within FitToObservedSFS_seaway in this repo
 <br>
-For each tested model, run scripts within ./hpc/fastsimcoal/FitToObservedSFS_seaway  
+For each tested model, run scripts within ./hpc/fastsimcoal_4pops/FitToObservedSFS_seaway  
 e.g. _psc_conflow_  
 ```{bash, error=TRUE, results='hide', eval=FALSE}
 #Make sure the correct files are located within ./FitToObservedSFS_seaway/FilesRequired
@@ -151,7 +151,7 @@ awk 'FNR==2{print;nextfile}' *.bestlhoods > summary.txt
 #Create header file to add the labels back in 
 nano header.txt
 
-#<erge header and summary file , then export for calculations
+#merge header and summary file , then export for calculations
 cat header.txt summary.txt > summary_final.txt
 ```
 

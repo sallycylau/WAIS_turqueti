@@ -1,0 +1,27 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NWS       unif     10    1e6   output
+1  NRS       unif     10    1e6   output
+1  NSHE      unif     10    1e6   output
+1  N_ANC        unif     10    1e6   output
+1  T1         unif     10    333334   output bounded
+0  TPLUS$         unif     1e-5    9e-1   hide bounded
+0  NM10$       logunif  1e-5   20     hide bounded
+0  NM20$       logunif  1e-5   20     hide bounded
+0  NM01$       logunif  1e-5   20     hide bounded
+0  NM02$       logunif  1e-5   20     hide bounded
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+
+0  RELANC = N_ANC/NSHE    hide
+1  T2 = T1*TPLUS$    output
+0  MIG10$ = NM10$/NWS  output
+0  MIG20$ = NM20$/NRS  output
+0  MIG01$ = NM01$/NSHE  output
+0  MIG02$ = NM02$/NSHE  output

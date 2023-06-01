@@ -1,5 +1,3 @@
-P_cornuta
-P_aequipapillae
 RossSea
 Peninsula
 EACasey
@@ -7,13 +5,10 @@ ElephantIs
 EAAdelie
 Amundsen
 SouthWeddellSea
-EAMawson
+EAPrydzBay
 EastWeddellSea
-RobertIs
-DeceptionIs
+SouthShetlandIs
 ShagRocks
-KingGeorgeIs
-LivingstonIs
 SouthOrkney
 SouthGeorgia
 BransfieldStrait

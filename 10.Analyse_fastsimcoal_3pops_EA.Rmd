@@ -1,0 +1,80 @@
+---
+title: "Demographic modelling with Fastsimcoal 3 populaitons"
+output: github_document
+---
+
+## Prepare input files for fastsimcoal
+```{bash, error=TRUE, results='hide'}
+cd ./turqueti/tarcap/analyses/fastsimcoal/vcf2sfs_EAWSRS
+
+python sampleKgenotypesPerPop.py -i ./rmSHEAS_aa.vcf -o seaway_tur_EAWSRS_resampled.vcf -p EAWSRS_original_diploid_popmap.txt -k Ross:8,EA:5,Weddell:15 -v
+```
+
+Reduce linkage in the SNP portion of the dataset by removing sites with r2 > 0.95 within 1000 bp distance 
+```{bash, error=TRUE, results='hide'}
+#Find out what sites are highly linked 
+/sw/containers/vcftools-0.1.16.sif vcftools --vcf seaway_tur_EAWSRS_resampled.vcf --geno-r2 --min-r2 .95 --ld-window-bp 1000 --out ld_window_1000
+
+#Remove sites that are linked
+/sw/containers/vcftools-0.1.16.sif vcftools --vcf seaway_tur_EAWSRS_resampled.vcf --exclude sitesLDprune.tsv --out seaway_tur_EAWSRS_resampled_LDpruned --recode --recode-INFO-all
+
+#Because we pruned some snps out, don't forget we also need to adjust the number of monomorphic sites proportional to the number of SNPS retained post linkage pruning 
+```
+
+Generate multiSFS for fastsimcoal  
+<br>
+```{bash, error=TRUE, results='hide'}
+python ./vcf2sfs.py -i ./seaway_tur_EAWSRS_resampled.vcf -o EA_WS_RS -p ./seaway_tur_EAWSRS_resampled_popmap.txt -q EA,Weddell,Ross -v
+
+python ./vcf2sfs.py -i ./seaway_tur_EAWSRS_resampled.vcf -o WS_RS_EA -p ./seaway_tur_EAWSRS_resampled_popmap.txt -q Weddell,Ross,EA -v
+```
+
+## Specify fastsimcoal models
+<br>
+The models that were tested in the paper are illistrated in the supplementary figures.  
+<br>
+See hpc/fastsimcol_3pops_EA/models in this repo for corresponding .est and .tpl files  
+<br>
+
+
+## Run fastsimcoal models
+Run fastsimocal. Do 100 reps with 500,000 coalescent simulations per model
+e.g. EA_WSRS  
+
+```{bash, error=TRUE, results='hide', eval=FALSE}
+PREFIX="EA_WSRS"
+
+cd ./turqueti/tarcap/analyses/fastsimcoal/models/EA_WSRS #where the .est, .tpl and .obs are
+
+ for i in {1..100}
+ do
+   mkdir run$i
+   cp ${PREFIX}.tpl ${PREFIX}.est *.obs run$i"/"
+   cd run$i
+   ./fsc26 -t ${PREFIX}.tpl -e ${PREFIX}.est -M0.001 -n500000 -l40 -L40 -C10 -c10 -B10 -d --multiSFS &> log.oe
+   cd ..
+ done
+```
+
+Find the best run using fsc-selectbestrun.sh  
+fsc-selectbestrun.sh is from https://speciationgenomics.github.io/fastsimcoal2/
+```{bash, error=TRUE, results='hide', eval=FALSE}
+cd ./turqueti/tarcap/analyses/fastsimcoal/models/EA_WSRS
+
+bash fsc-selectbestrun.sh
+```
+
+## Model choice
+Get the maximised likelihood distributions for each model  
+<br>
+Here we use the scripts designed by Bagley et al. (2016) to automate the process of maximising likelihood distributions, as well as plotting the residuals and the fit of the approximated model to the observed SFS  
+<br>
+* the scripts I used are deposited in https://doi.org/10.5061/dryad.vh75r. Path to original scripts is: /Demography_fastsimcoal2/CustomScripts/FitToObservedSFS_3DSFS  
+For each tested model, run scripts within ./hpc/fastsimcoal_3pops_SHE/FitToObservedSFS_seaway  
+e.g. EA_WSRS  
+```{bash, error=TRUE, results='hide', eval=FALSE}
+#Make sure the correct files are located within ./FitToObservedSFS_seaway/FilesRequired
+cd ./turqueti/tarcap/analyses/fastsimcoal_3pops_SHE/models/EA_WSRS/FitToObservedSFS_seaway
+
+Rscript AnalyseModelChoice_3DSFS.r
+```

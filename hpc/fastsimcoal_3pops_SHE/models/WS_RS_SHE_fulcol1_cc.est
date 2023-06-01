@@ -1,0 +1,37 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NSHE$       unif     10    1e6   output
+1  NWS$       unif     10    1e6   output
+1  NRS$       unif     10    1e6   output
+1  NSHEC$       unif     10    1e6   output
+1  NWSC$       unif     10    1e6   output
+1  NRSC$       unif     10    1e6   output
+1  NANC$        unif     10    1e6   output
+1  T1         unif     10    333334   output bounded
+0  TPLUS$         unif     1e-5    9e-1   hide bounded
+0  NM10C$       logunif  1e-5   20     hide bounded
+0  NM01C$       logunif  1e-5   20     hide bounded
+0  NM20$       logunif  1e-5   20     hide bounded
+0  NM21$       logunif  1e-5   20     hide bounded
+0  NM02$       logunif  1e-5   20     hide bounded
+0  NM12$       logunif  1e-5   20     hide bounded
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+
+0  NWSRES$ = NWSC$/NWS$    hide
+0  NRSRES$ = NRSC$/NRS$    hide
+0  NSHERES$ = NSHEC$/NSHE$    hide
+0  RES1$ = NANC$/NWSC$    hide
+1  T2 = T1*TPLUS$    output
+0  MIG10C$ = NM10C$/NRSC$  output
+0  MIG01C$ = NM01C$/NWSC$  output
+0  MIG20$ = NM20$/NSHE$  output
+0  MIG21$ = NM21$/NSHE$  output
+0  MIG02$ = NM02$/NWS$  output
+0  MIG12$ = NM12$/NRS$  output
