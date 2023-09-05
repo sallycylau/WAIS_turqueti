@@ -121,7 +121,7 @@ popmap='./turqueti/ddRAD/population_target_cap_filter/popmap_target_cap.tsv' # s
 
 populations -P $refmap -O $out_dir -M $popmap -R 0.5 --min-maf 0.01 --vcf --fasta-loci --fasta-samples -t 10
 ```
-Determine 'reliable' ddRAD loci for target capture sequencing of ddRAD loci  
+Determine reliable ddRAD loci for target capture sequencing of ddRAD loci  
 After SNP filtering in stacks (-R 0.5, --minmaf 0.01), align the consensus sequences of the filtered loci back to genome using bowtie2 (end to end alignemnt)  
 ```{bash, error=TRUE, results='hide'}
 #convert loci.fa to .fq  

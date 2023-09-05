@@ -1,5 +1,0 @@
-"W" "X" "Y" "Z" "D" "stderr" "Zscore" "BABA" "ABBA" "nsnps"
-"1" "Amundsen" "EA" "Weddell" "SRSG" 0.013 0.002007 6.465 1638 1596 120857
-"2" "Amundsen" "Shetland" "Weddell" "SRSG" 0.0113 0.001857 6.084 1576 1541 120857
-"3" "Ross" "EA" "Weddell" "SRSG" 0.0295 0.00187 15.77 1616 1523 120857
-"4" "Ross" "Shetland" "Weddell" "SRSG" 0.0284 0.001838 15.447 1554 1468 120857

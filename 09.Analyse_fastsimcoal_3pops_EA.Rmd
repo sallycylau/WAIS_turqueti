@@ -1,0 +1,54 @@
+---
+title: "Demographic modelling with Fastsimcoal 3 populations"
+output: github_document
+---
+
+## Prepare input files for fastsimcoal
+```{bash, error=TRUE, results='hide'}
+cd ./turqueti/tarcap/analyses/fastsimcoal/vcf2sfs_EAWSRS
+
+python sampleKgenotypesPerPop.py -i ./EAWSRS_max_het07_polyonly_aa.vcf -o seaway_tur_EAWSRS_resampled.vcf -p EAWSRS_original_popmap.txt -k Ross:8,EA:5,Weddell:15 -v
+```
+
+Generate multiSFS for fastsimcoal  
+<br>
+```{bash, error=TRUE, results='hide'}
+python ./vcf2sfs.py -i ./seaway_tur_EAWSRS_resampled.vcf -o EA_WS_RS -p ./seaway_tur_EAWSRS_resampled_popmap.txt -q EA,Weddell,Ross -v
+
+python ./vcf2sfs.py -i ./seaway_tur_EAWSRS_resampled.vcf -o WS_RS_EA -p ./seaway_tur_EAWSRS_resampled_popmap.txt -q Weddell,Ross,EA -v
+```
+
+## Specify fastsimcoal models
+<br>
+The models that were tested in the paper are illustrated in the supplementary figures.  
+<br>
+See hpc/fastsimcol_3pops_EA/models in this repo for corresponding .est and .tpl files  
+<br>
+
+
+## Run fastsimcoal models
+Run fastsimocal. Do 100 reps with 200,000 coalescent simulations per model
+e.g. EA_WSRS  
+
+```{bash, error=TRUE, results='hide', eval=FALSE}
+PREFIX="EA_WSRS"
+
+cd ./turqueti/tarcap/analyses/fastsimcoal/models/EA_WSRS #where the .est, .tpl and .obs are
+
+ for i in {1..100}
+ do
+   mkdir run$i
+   cp ${PREFIX}.tpl ${PREFIX}.est *.obs run$i"/"
+   cd run$i
+   ./fsc27093 -t ${PREFIX}.tpl -e ${PREFIX}.est -M -n200000 -l50 -L50 -C10 -c10 -B10 -d --multiSFS &> log.oe
+   cd ..
+ done
+```
+
+Find the best run using fsc-selectbestrun.sh  
+fsc-selectbestrun.sh is from https://speciationgenomics.github.io/fastsimcoal2/
+```{bash, error=TRUE, results='hide', eval=FALSE}
+cd ./turqueti/tarcap/analyses/fastsimcoal/models/EA_WSRS
+
+bash fsc-selectbestrun.sh
+```

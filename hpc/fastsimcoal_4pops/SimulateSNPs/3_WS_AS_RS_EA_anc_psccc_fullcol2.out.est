@@ -1,0 +1,63 @@
+// Priors and rules file
+// *********************
+
+[PARAMETERS]
+//#isInt? #name   #dist.#min  #max 
+//all Ns are in number of haploid individuals
+1  NEA$       unif     88644    88644   output
+1  NWS$       unif     935567    935567   output
+1  NAS$       unif     57021    57021   output
+1  NRS$       unif     1060714    1060714   output
+1  NEAC$       unif     4.98E+05    4.98E+05   output
+1  NWSC$       unif     3.06E+06    3.06E+06   output
+1  NASC$       unif     6.33E+05    6.33E+05   output
+1  NRSC$       unif     5.07E+06    5.07E+06   output
+1  NANC3$        unif     8.63E+05    8.63E+05   output
+1  NANC2$        unif     8.67E+06    8.67E+06   output
+1  NANC1$        unif     4.02E+05    4.02E+05   output
+1 T1 unif 253663 253663 output bounded
+1 T2 unif 7232 7232 output 
+1  TPLUSANC$         unif     2510725    2510725   hide
+0  TPLUS$         unif     0.028814012    0.028814012   hide bounded
+0  NM10$       logunif  6.46E+00   6.46E+00     hide bounded
+0  NM30$       logunif  1.69E+01   1.69E+01     hide bounded
+0  NM01$       logunif  5.04E-01   5.04E-01     hide bounded
+0  NM21$       logunif  6.52E-04   6.52E-04     hide bounded
+0  NM12$       logunif  1.87E+01   1.87E+01     hide bounded
+0  NM32$       logunif  1.47E+01   1.47E+01     hide bounded
+0  NM03$       logunif  1.25E+01   1.25E+01     hide bounded
+0  NM23$       logunif  9.01E-01   9.01E-01     hide bounded
+0  NM10C$       logunif  1.16E-01   1.16E-01     hide bounded
+0  NM20C$       logunif  1.04E-01   1.04E-01     hide bounded
+0  NM01C$       logunif  9.35E+00   9.35E+00     hide bounded
+0  NM21C$       logunif  1.72E+01   1.72E+01     hide bounded
+0  NM02C$       logunif  1.42E+01   1.42E+01     hide bounded
+0  NM12C$       logunif  3.93E-01   3.93E-01     hide bounded
+
+[RULES]
+
+[COMPLEX PARAMETERS]
+
+0  NWSRES$ = NWSC$/NWS$    hide
+0  NASRES$ = NASC$/NAS$    hide
+0  NRSRES$ = NRSC$/NRS$    hide
+0  NEARES$ = NEAC$/NEA$    hide
+0  RES1$ = NANC3$/NWSC$    hide
+0  RELANC$ = NANC2$/NANC3$    hide
+0  RELANC2$ = NANC1$/NANC2$    hide
+1  T0 = TPLUSANC$ + T1 output
+1  T3 = T2*TPLUS$    output
+0  MIG10$ = NM10$/NAS$  output
+0  MIG30$ = NM30$/NEA$  output
+0  MIG01$ = NM01$/NWS$  output
+0  MIG21$ = NM21$/NRS$  output
+0  MIG12$ = NM12$/NAS$  output
+0  MIG32$ = NM32$/NEA$  output
+0  MIG03$ = NM03$/NWS$  output
+0  MIG23$ = NM23$/NRS$  output
+0  MIG10C$ = NM10C$/NASC$  output
+0  MIG20C$ = NM20C$/NRSC$  output
+0  MIG01C$ = NM01C$/NWSC$  output
+0  MIG21C$ = NM21C$/NRSC$  output
+0  MIG02C$ = NM02C$/NWSC$  output
+0  MIG12C$ = NM12C$/NASC$  output

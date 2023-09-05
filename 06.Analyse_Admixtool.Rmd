@@ -1,0 +1,94 @@
+---
+title: "Analyse with Admixtools"
+output: github_document
+---
+
+## Prepare ADMIXTOOLS input files to calculate D and outgroup-f3 statistics
+
+convert vcf file to eigenstrat format  
+```{bash, error=TRUE, results='hide'}
+module load python
+module load R 
+module load gdc
+
+cd ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat
+
+python ./vcf2eigenstrat.py -v ./admixtools.vcf -o tur_SRSGseaway_root
+
+# see here for convering vcf to Eigenstrat: https://github.com/joanam/scripts/blob/master/convertVCFtoEigenstrat.sh
+```
+
+## Run ADMIXTOOLS using admixR
+
+Run admixR to calculate D statistics and outgroup f3 statistics  
+
+```{bash, error=TRUE, results='hide', eval=FALSE}
+#Load R
+module load conda3
+source $CONDA_PROF/conda.sh
+conda activate R-3.6.1
+
+#Set .Renviron path to where the folder containing ADMIXTOOL
+nano /home/.Renviron
+PATH=./AdmixTools/bin
+
+#Then load R
+R
+```
+
+```{r, eval=F, echo=T}
+library(admixr)
+library(tidyverse)
+
+data_prefix <- "./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root"
+snps <- eigenstrat(data_prefix)
+snp_info <- count_snps(snps)
+
+##D statistics (in the form of BABA-ABBA)
+Dresult <- d(W = c("Amundsen", "Ross"), X = c("EA", "Shetland"), Y = "Weddell", Z = "SRSG",
+  data = snps, params = list(blockname = "./admixtools/vcf2eigenstrat/my_contigs.txt"))
+
+write.table(Dresult, file="./results/admixtools/Dresults.txt") #in the form of BABA-ABBA
+
+##outgroup-f3-statistics 
+
+pops <- c("Amundsen", "Ross", "Weddell", "Shetland", "EA")
+
+f3result <- f3(A = pops, B = pops, C = "SRSG", data = snps, params = list(blockname = "./admixtools/vcf2eigenstrat/my_contigs.txt"))
+
+write.table(f3result, file="./results/admixtools/f3results.txt")
+```
+
+
+## Analysis of simulated data from fastsimcoal models and compare against observed data
+
+Generate simulated SNPs for best complex model with WAIS collapse and simpler models with no or partial WAIS collapse 
+<br>
+See hpc/fastsimcol_4pops/SimulateSNPs in this repo for corresponding scripts  
+<br>
+Calculate f4-statistic and compared across observed and simulated data
+```{bash, error=TRUE, results='hide', eval=FALSE}
+#Example script using observed data 
+cd ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root
+
+nano sim_4pop.par
+
+genotypename: ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.geno
+snpname:      ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.snp
+indivname:    ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/tur_SRSGseaway_root.ind
+blockname:    ./turqueti/tarcap/analyses/admixtools/vcf2eigenstrat/my_contigs.txt
+poplistname:  pop_list.txt
+f4mode:   YES      
+printsd:  YES
+
+nano pop_list.txt
+
+Weddell
+Amundsen
+Ross
+EA
+
+
+qpDstat -p sim_4pop.par -V >logfile
+
+```

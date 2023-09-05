@@ -9,7 +9,7 @@ cd ./turqueti/tarcap/SNPfiltering1/1_rmindel
 /sw/containers/vcftools-0.1.16.sif vcftools --gzvcf ./turqueti/tarcap/bcftools_mpileup/raw.vcf.gz --remove-indels --out rmindels --recode --recode-INFO-all
 ```
 
-Remove technical duplicates (don't forget to check for potential batch effect using PCA first):
+Remove technical duplicates (check for potential batch effect using PCA first):
 ```{bash, error=TRUE, results='hide', eval=FALSE}
 cd ./turqueti/tarcap/SNPfiltering1/2_rm_tech_dups
 

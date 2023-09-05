@@ -1,64 +1,62 @@
 ---
-title: "SNP filtering - for demographic models/admixtools"
+title: "SNP filtering - demographic models / stairwayplot"
 output: github_document
 ---
-Keep samples from Weddell Sea, Amundsen Sea, Ross Sea, East Antarctica and Shetland Islands
+Keep samples from Weddell Sea, Amundsen Sea, Ross Sea amd East Antarctica (4 population model in main text):
 ```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/2_keep_seaway_samples
+cd ./turqueti/tarcap/SNPfiltering2/1_keep_seaway_samples
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering1/1_rmindel/rmindels.recode.vcf --keep keep_seaway_samples.tsv --out seaway_samples --recode --recode-INFO-all
-
-## Calculate missing data per indiviudal
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf rmduplciates.vcf.recode.vcf --missing-indv --out out
-
-## Calculate mean depth per site
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf rmduplciates.vcf.recode.vcf --site-mean-depth --out out
-
-awk '{ total += $3 } END { print total/NR }' out.ldepth.mean #mean depth = 51.3327
+bcftools view -S keep_4popseaway_samples.txt  -o seawayonly-vcf.vcf ./turqueti/tarcap/bcftools_mpileup/raw.vcf.gz
 ```
 
-Remove samples with high missing data (>80%):
+Remove sites with mean depth less than 5 (‐‐min-meanDP 5) and greater than average*2 (--max-meanDP 103):
 ```{bash, error=TRUE, results='hide'}
-### Skip, we don't have samples with high missing data. 
+cd ./turqueti/tarcap/SNPfiltering2/2_site_depth
+
+vcftools --vcf ./1_keep_seaway_samples/seawayonly-vcf.vcf --min-meanDP 5 --max-meanDP 103 --out site_depth --recode --recode-INFO-all
+
 ```
 
-Filter by minimum base quality score of 30:
+Remove indels:
 ```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/4_minQ
+cd ./turqueti/tarcap/SNPfiltering2/3_rm_indels
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering2/2_keep_seaway_samples/seaway_samples.recode.vcf --minQ 30 --out minQ30 --recode --recode-INFO-all
+vcftools --vcf ./2_site_depth/site_depth.recode.vcf --remove-indels --out rmindels --recode --recode-INFO-all
+
+#keep polymorphic sites only
+bcftools view -c 1 rmindels.recode.vcf -Ov -o rmindels_polyonly.vcf
+
+#keep monomorphic sites only (for number of mono site counting purpose)
+bcftools view -C 0 rmindels.recode.vcf -Ov -o rmindels_monoonly.vcf
 ```
 
-Remove sites with mean depth less than average/3 (‐‐min-meanDP 17) and greater than average*2 (--max-meanDP 103):
+From here on, only filter polymorphic sites
+Filter sites with minQ20
 ```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/5_site_depth
+cd ./turqueti/tarcap/SNPfiltering2/4_minQ20
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering2/4_minQ/minQ30.recode.vcf --min-meanDP 17 --max-meanDP 103 --out site_depth --recode --recode-INFO-all
+vcftools --vcf ./3_remove_indels/rmindels_polyonly.vcf --minQ 20 --out minQ20polyonly --recode --recode-INFO-all
 ```
 
-Keep monomorphic and biallelic sites:
+Filter sites with --hwe 0.0001:
 ```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/6_sites
+cd ./turqueti/tarcap/SNPfiltering2/5_hwe
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering2/5_site_depth/site_depth.recode.vcf --min-alleles 1 --max-alleles 2 --out sites --recode --recode-INFO-all
+vcftools --vcf ./4_minQ20/minQ20polyonly.recode.vcf --hwe 0.0001 --out hewpolyonly --recode --recode-INFO-all
 ```
 
-Keep sites present in 50% of all samples (i.e. filter by 50% missing data):
+Keep biallelic SNPs only:
 ```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/7_max_missing05
+cd ./turqueti/tarcap/SNPfiltering2/6_biallelic
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering2/6_sites/sites.recode.vcf --max-missing 0.5 --out maxmissing05 --recode --recode-INFO-all
+vcftools --vcf ./5_hwe/hewpolyonly.recode.vcf --max-alleles 2 --out biallelicpolyonly --recode --recode-INFO-all
+#no site was lost
 ```
 
-Keep polymorphic sites with a maximum observed heterozygosity value of 0.7:
-Typical for RAD-loci data, for refs see https://onlinelibrary.wiley.com/doi/full/10.1111/j.1755-0998.2010.02967.x &
-https://onlinelibrary.wiley.com/doi/full/10.1111/1755-0998.13314
+Keep sites with a maximum observed heterozygosity value of 0.7:
 ```{bash, error=TRUE, results='hide'}
 ## first, define site ID
-/sw/containers/bcftools-1.13.sif bcftools annotate --set-id '%CHROM\_%POS' maxmissing05.recode.vcf > maxmissing05_setID.vcf
-
-## then, keep biallelic sites only
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf maxmissing05_setID.vcf --min-alleles 2 --max-alleles 2 --out maxmissing05_setID_biallelic --recode --recode-INFO-all
+bcftools annotate --set-id '%CHROM\_%POS' biallelicpolyonly.recode.vcf > biallelicpolyonly_setID.vcf
 
 ```
 ```{r, eval=F, echo=T}
@@ -69,7 +67,7 @@ library(vcfR)
 
 ### get a genind from the semi-filtered vcf file from bcftools
 
-vcf2 <- read.vcfR("./maf005_setID.vcf")
+vcf2 <- read.vcfR("./biallelicpolyonly_setID.vcf")
 tur_genind <- vcfR2genind(vcf2)
 summary_genind = summary(tur_genind)
 
@@ -78,13 +76,13 @@ summary_genind$Hobs
 
 write.csv(summary_genind$Hobs, file = "Hobs_per_SNP.csv")
 
-### you can then sort the values in excel and save a list of the SNP (with site ID) with >0.7
+### sort the values in excel and save a list of the SNP (with site ID) with >0.7
 ```
 ```{bash, error=TRUE, results='hide'}
 ## Filter sites with maximum observed heterozygosity of 0.7
-cd ./turqueti/tarcap/SNPfiltering2/8_max_obs_het07
+cd ./turqueti/tarcap/SNPfiltering2/7_max_obs_het07
 
-/sw/containers/vcftools-0.1.16.sif vcftools --vcf ./turqueti/tarcap/SNPfiltering2/7_max_missing05/maxmissing05_setID.vcf --exclude site_obs_het_over_07.tsv --out max_het07.vcf --recode --recode-INFO-all
+vcftools --vcf ./6_biallelic/biallelicpolyonly_setID.vcf --exclude site_obs_het_over_07.tsv --out max_het07_polyonly.vcf --recode --recode-INFO-all
 ```
 
 Set ancestral alelles using outgroups in vcf file:  
@@ -96,22 +94,7 @@ cd ./turqueti/tarcap/SNPfiltering2/9_setAA
 echo '##INFO=<ID=AA,Number=1,Type=Character,Description="Ancestral allele">' > hdr.txt
 
 ## use bcftools to annotate the vcf file with the ancestral allele information
-/sw/containers/bcftools-1.13.sif bcftools annotate -a ./out_aa.tab.gz \
- -c CHROM,POS,REF,ALT,INFO/AA -h hdr.txt -Oz \
- -o max_het07_aa.vcf.gz max_het07.vcf.recode.vcf.gz
-```
-
-Check if setting AA has worked:
-```{bash, error=TRUE, results='hide'}
-/sw/containers/bcftools-1.13.sif query -f '%CHROM\t%POS\t%REF\t%ALT\t%INFO/AA\n' max_het07_aa.vcf.gz | less
-
-#Count how many sites have ancestral allele information
-/sw/containers/bcftools-1.13.sif view -e 'INFO/AA=="."' max_het07_aa.vcf.gz -H | wc -l   
-```
-
-Remove e.g. Shetland Islands samples (depends on analyses):
-```{bash, error=TRUE, results='hide'}
-cd ./turqueti/tarcap/SNPfiltering2/11_rm_shetland
-
-/sw/containers/vcftools-0.1.16.sif vcftools --gzvcf ./turqueti/tarcap/SNPfiltering2/9_setAA/max_het07_aa.vcf.gz --remove shetland_tur.tsv --out rmshetland_aa --recode --recode-INFO-all
+bcftools annotate -a ./out_aa.tab.gz \
+ -c CHROM,POS,REF,ALT,INFO/AA -h hdr.txt -Ov \
+ -o max_het07_polyonly_aa.vcf max_het07_polyonly.vcf.recode.vcf
 ```
