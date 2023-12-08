@@ -10,7 +10,7 @@ SFS: 45757	18421	9907	6784	5125	3821	2738	1635	869	437	385	423	426	432	415	408	4
 pct_training: 0.67 # percentage of sites for training
 nrand: 4	9	13	18 # number of random break points for each try (separated by white space) (nseq-2)/4, (nseq-2)/2, (nseq-2)*3/4, nseq-2. 
 project_dir: RS # project directory
-stairway_plot_dir: /scratch/jc446633/tur_batch1_batch2seaway_revision2/stairwayplot/stairway_plot_v2.1.2/stairway_plot_es # directory to the stairway plot files
+stairway_plot_dir: /stairwayplot/stairway_plot_v2.1.2/stairway_plot_es # directory to the stairway plot files
 ninput: 200 # number of input files to be created for each estimation
 #random_seed: 6
 #output setting

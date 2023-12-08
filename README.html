@@ -104,8 +104,8 @@ pre code {
   border-radius: 4px;
 }
 
-.tabset-dropdown > .nav-tabs > li.active:before {
-  content: "";
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
   font-family: 'Glyphicons Halflings';
   display: inline-block;
   padding: 10px;
@@ -113,16 +113,9 @@ pre code {
 }
 
 .tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
-  content: "";
-  border: none;
-}
-
-.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
-  content: "";
+  content: "\e258";
   font-family: 'Glyphicons Halflings';
-  display: inline-block;
-  padding: 10px;
-  border-right: 1px solid #ddd;
+  border: none;
 }
 
 .tabset-dropdown > .nav-tabs > li.active {
@@ -171,30 +164,27 @@ pre code {
 </div>
 
 
-<div id="pareledone-turqueti" class="section level2">
-<h2>Pareledone turqueti</h2>
-<blockquote>
-<p>Publication info TBA</p>
-</blockquote>
-<p>This repository contains scripts for the analyses of ddRAD loci of Pareledone turqueti sequenced with a target capture method.</p>
+<div id="genomic-evidence-for-west-antarctic-ice-sheet-collapse-during-the-last-interglacial" class="section level2">
+<h2>Genomic evidence for West Antarctic Ice Sheet collapse during the Last Interglacial</h2>
 <div id="project-outline" class="section level4">
 <h4>Project outline</h4>
 <p><strong>Sequencing and data processing</strong><br />
 - <a href="01.Loci_discovery_4_target_capture_seq.md">ddRAD loci discovery for target capture sequencing</a><br />
 - <a href="02.Target_capture_reads_processing.md">Target capture reads processing and variant calling</a><br />
 - <a href="03.Target_capture_SNPfiltering_pop_structure.md">Target capture reads filtering - for population structure</a><br />
-- <a href="04.Target_capture_SNPfiltering_demographic_models.md">Target capture reads filtering - for demographic models and admixtools</a><br />
-- <a href="05.Target_capture_SNPfiltering_stairway_plot.md">Target capture reads filtering - for stiarway plot</a></p>
+- <a href="04.Target_capture_SNPfiltering_demographic_models.md">Target capture reads filtering - for demographic inferences</a></p>
 <p><strong>Data analyses</strong><br />
-- <a href="06.Analyse_population_structure.md">Population structure</a><br />
-- <a href="07.Analyse_Admixtool.md">Admixtools</a><br />
-- <a href="08.Analyse_fastsimcoal.md">Demographic modelling (Fastsimcoal)</a><br />
-- <a href="09.Analyse_Stairway_plot.md">Population size changes over time (StairwayPlot)</a></p>
+- <a href="05.Analyse_population_structure.md">Population structure</a><br />
+- <a href="06.Analyse_Admixtool.md">Admixtools</a><br />
+- <a href="07.Analyse_fastsimcoal.md">Demographic modelling (Fastsimcoal 4 population models)</a><br />
+- <a href="08.Analyse_Stairway_plot.md">Population size changes over time (StairwayPlot)</a><br />
+- <a href="09.Analyse_fastsimcoal_3pops_EA.md">Demographic modelling (Fastsimcoal 3 population models with EA)</a><br />
+- <a href="09.Analyse_fastsimcoal_3pops_SHE.md">Demographic modelling (Fastsimcoal 3 population models with SHE)</a></p>
 </div>
 <div id="raw-data-accessions" class="section level4">
 <h4>Raw data accessions</h4>
 <blockquote>
-<p>The ddRADseq data of Southern Ocean octopus generated for target capture bait design is deposited on National Centre for Biotechnology Information (NCBI) under the BioProject PRJNA853080, with Sequence Read Archive (SRA) accessions SRR19893055–SRR19893494. The target capture of ddRAD loci data in Pareledone turqueti is deposited under the BioProject PRJNA853871, with SRA accessions SRR19892485–SRR19892582.</p>
+<p>The ddRADseq data of Southern Ocean octopus generated for target capture bait design is deposited on National Centre for Biotechnology Information (NCBI) under the BioProject PRJNA853080, with Sequence Read Archive (SRA) accessions SRR19893055–SRR19893494. The target capture of ddRAD loci data of Pareledone turqueti is deposited under the BioProject PRJNA853871, with SRA accessions SRR19892485–SRR19892582.</p>
 </blockquote>
 </div>
 </div>

@@ -30,7 +30,7 @@ Within hpc, models are called 1_[model name],  2_[model name] or 3_[model name];
 
 ## Run fastsimcoal models
 Run fastsimocal. Do 100 reps with 200,000 coalescent simulations per model
-e.g. _psc_conflow_  
+e.g. _psc_conflow  
 
 ```{bash, error=TRUE, results='hide', eval=FALSE}
 PREFIX="1_WS_AS_RS_EA_psc_conflow"
